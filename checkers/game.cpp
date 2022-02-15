@@ -404,7 +404,6 @@ pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::minimax(size_t depth) con
 	}
 	else {
 		for (auto& m : _moves) {
-			int test = 0;
 			for (auto& minmax : m) {
 				if (minmax.second.first - minmax.first.first == 1) {
 					if (minmax.second.first + 1 == ' ' && minmax.second.second + 1 == ' ') {
