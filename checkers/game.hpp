@@ -14,10 +14,6 @@ using std::pair;
 using std::vector;
 #include<string>
 using std::string;
-#include <random>
-using std::mt19937;
-using std::random_device;
-using std::uniform_int_distribution;
 
 // class Game
 // Manages players and board for checkers game.
@@ -31,10 +27,6 @@ public:
 	// getInput
 	// Return pairs of coordinates, start and end position
 	pair<pair<size_t, size_t>, pair<size_t, size_t>> getInput() const;
-
-	// gameEnd
-	// end game
-	void gameEnd();
 
 	// generateMoves
 	// Store all possible checker piece moves
@@ -68,14 +60,6 @@ public:
 	// resetJumped
 	// if turn is over, reset jump value
 	void resetJumped();
-
-	// leftJump
-	// repeatable prompt for piece jumping left
-	void leftJump(size_t row, size_t col, char command);
-
-	// rightJump
-	// repeatable prompt for piece jumping left
-	void rightJump(size_t row, size_t col, char command);
 
 	// minimax
 	// Determine best move based on scoring system
@@ -116,7 +100,7 @@ public:
 
 	// printBoard
 	// print board based on piece information
-	void printBoard();
+	string printBoard();
 
 	// gameIsOver
 	// Return whether or not game is over

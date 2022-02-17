@@ -139,10 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="catch.h" />
     <ClInclude Include="game.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="checkers_main.cpp" />
+    <ClCompile Include="checkers_test.cpp" />
     <ClCompile Include="game.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
