@@ -14,6 +14,10 @@ int main() {
 	g.resetMoves();
 	g.resetJumped();
 	while (!g.gameIsOver()) {
+		if (g.gameIsOver()) {
+			break;
+		}
+
 		player = 1 - player;
 		g.setPlayer(player);
 		g.switchDirection();

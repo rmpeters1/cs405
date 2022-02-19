@@ -14,6 +14,9 @@ using std::pair;
 using std::vector;
 #include<string>
 using std::string;
+#include <ostream>
+#include <sstream>
+using std::ostringstream;
 
 // class Game
 // Manages players and board for checkers game.
@@ -100,26 +103,19 @@ public:
 
 	// printBoard
 	// print board based on piece information
-	string printBoard();
+	ostringstream printBoard();
 
 	// gameIsOver
 	// Return whether or not game is over
 	bool gameIsOver() const;
 
+	// size
+	// Return size of the board
 	size_t size() const;
 
-	// 2d char for storing board values
-	char board[8][8] =
-	{
-		{' ', 'r', ' ', 'r', ' ', 'r', ' ', 'r'},
-		{'r', ' ', 'r', ' ', 'r', ' ', 'r', ' '},
-		{' ', 'r', ' ', 'r', ' ', 'r', ' ', 'r'},
-		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-		{'b', ' ', 'b', ' ', 'b', ' ', 'b', ' '},
-		{' ', 'b', ' ', 'b', ' ', 'b', ' ', 'b'},
-		{'b', ' ', 'b', ' ', 'b', ' ', 'b', ' '},
-	};
+	// setBoard
+	// set temporary board or main board to the other based on given input
+	void setBoard(int switchNumber);
 
 private:
 	// player is who will start first. (1 - Computer / 0 - Human)
@@ -133,9 +129,23 @@ private:
 	bool _gameOver = false;
 	// size of board
 	size_t _size = 8;
+	size_t _depth = 1;
 
 	vector<vector<pair<pair<size_t, size_t>, pair<size_t, size_t>>>> _moves;
 	vector<vector<pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>>>> _jumps;
 
+	char board[8][8] =
+	{
+		{' ', 'r', ' ', 'r', ' ', 'r', ' ', 'r'},
+		{'r', ' ', 'r', ' ', 'r', ' ', 'r', ' '},
+		{' ', 'r', ' ', 'r', ' ', 'r', ' ', 'r'},
+		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+		{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+		{'b', ' ', 'b', ' ', 'b', ' ', 'b', ' '},
+		{' ', 'b', ' ', 'b', ' ', 'b', ' ', 'b'},
+		{'b', ' ', 'b', ' ', 'b', ' ', 'b', ' '},
+	};
+
+	char _tempBoard[8][8] = { ' ' };
 
 };

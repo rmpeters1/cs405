@@ -4,6 +4,6 @@
 
 TEST_CASE("") {
 	Game g;
-	
-	//REQUIRE();
+	ostringstream output = g.printBoard();
+	REQUIRE(output.str() == " r r r rr r r r  r r r r                b b b b  b b b bb b b b ");
 }

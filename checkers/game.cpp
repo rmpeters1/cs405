@@ -6,13 +6,12 @@
 
 pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::getInput() const {
 	pair<pair<size_t, size_t>, pair<size_t, size_t>> CompMove = minimax(1);
+
 	vector<pair<int, pair<pair<size_t, size_t>, pair<size_t, size_t>>>> moveSelection;
 	int moveNumber = 1;
 	int moveSize = 2;
 	int chosenMove = 0;
-	int computerMove = 0;
-	random_device rd;
-	mt19937 gen(rd());
+	int computerMove = 1;
 	for (auto& m : _moves) {
 		for (auto& pmoves : m) {
 			moveSelection.push_back(std::make_pair(moveNumber, std::make_pair(pmoves.first, pmoves.second)));
@@ -26,6 +25,9 @@ pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::getInput() const {
 
 	}
 	while (true) {
+		if (gameIsOver()) {
+			break;
+		}
 		if (_player == 0) {
 			cout << "Choose a move: ";
 			cin >> chosenMove;
@@ -101,13 +103,14 @@ void Game::setPlayerLetter() {
 
 pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>> Game::pieceJump() {
 	char command = ' ';
-	pair<pair<size_t, size_t>, pair<size_t, size_t>> CompMove = minimax(1);
+	pair<pair<size_t, size_t>, pair<size_t, size_t>> CompMove;
+	if (!_jumps.empty()) {
+		CompMove = minimax(1);
+	}
 	vector<pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<int, pair<size_t, size_t>>>> jumpSelection;
 	int moveNumber = 1;
-	int computerMove;
+	int computerMove = 1;
 	int chosenMove = 0;
-	random_device rd;
-	mt19937 gen(rd());
 	if (_jumped) {
 		for (auto& m2 : _jumps) {
 			for (auto& pjumps2 : m2) {
@@ -167,13 +170,19 @@ pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>> Gam
 			}
 		}
 	
-		while (true) {
+		while (!_jumped) {
 			if (_player == 0) {
+				if (_jumped) {
+					break;
+				}
 				cout << "Choose a move: ";
 				cin >> chosenMove;
 
 			}
 			if (_player == 1) {
+				if (_jumped) {
+					break;
+				}
 				cout << "Opponent is playing their turn..." << endl;
 			}
 			for (auto& js : jumpSelection) {
@@ -386,7 +395,6 @@ void Game::generateMoves() {
 
 
 pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::minimax(size_t depth) const {
-
 	int score = 0;
 	int temp1 = 0;
 	vector<pair<int, pair<pair<size_t, size_t>, pair<size_t, size_t>>>> temp;
@@ -395,28 +403,26 @@ pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::minimax(size_t depth) con
 		for (auto& m : _jumps) {
 			for (auto& minmax : m) {
 				if (minmax.first.second.first - minmax.first.first.first == 2) {
-					if (minmax.first.second.first + 1 == ' ' && minmax.first.second.second + 1 == ' ') {
 						if ((minmax.first.second.first + 1 == ' ' && minmax.first.second.second - 1 == ' ') ||
 							(minmax.first.second.first + 1 == ' ' && minmax.first.second.second + 1 == ' '))
-							score = 2;
+							score = 1;
 						temp.push_back(std::make_pair(score, minmax.first));
-					}
+
+						
 				}
-				if (minmax.first.second.first - minmax.first.first.first == -2) {
-					if (minmax.first.second.first + 1 == ' ' && minmax.first.second.second + 1 == ' ') {
+				else if (minmax.first.second.first - minmax.first.first.first == -2) {
 						if ((minmax.first.second.first - 1 == ' ' && minmax.first.second.second - 1 == ' ') ||
 							(minmax.first.second.first - 1 == ' ' && minmax.first.second.second + 1 == ' '))
-							score = 3;
+							score = 2;
 						temp.push_back(std::make_pair(score, minmax.first));
-					}
 				}
 				else {
-					score = 1;
+					score = 0;
 					temp.push_back(std::make_pair(score, minmax.first));
 				}
 			}
 		}
-		for (auto t : temp) {
+		for (auto& t : temp) {
 			if (t.first > temp1) {
 				temp1 = t.first;
 				bestPlay = t.second;
@@ -427,24 +433,23 @@ pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::minimax(size_t depth) con
 	else {
 		for (auto& m : _moves) {
 			for (auto& minmax : m) {
+				/*if (getLetter(minmax.first.first, minmax.second.first, switchKingDirection(minmax.first.first, minmax.second.first,'U')) == playerKingLetter) {
+				
+				}*/
 				if (minmax.second.first - minmax.first.first == 1) {
-					if (minmax.second.first + 1 == ' ' && minmax.second.second + 1 == ' ') {
 						if ((minmax.second.first + 1 == ' ' && minmax.second.second - 1 == ' ') ||
 							(minmax.second.first + 1 == ' ' && minmax.second.second + 1 == ' '))
-							score = 2;
+							score = 1;
 						temp.push_back(std::make_pair(score, minmax));
-					}
 				}
-				if (minmax.second.first - minmax.first.first == -1) {
-					if (minmax.second.first + 1 == ' ' && minmax.second.second + 1 == ' ') {
+				else if (minmax.second.first - minmax.first.first == -1) {
 						if ((minmax.second.first - 1 == ' ' && minmax.second.second - 1 == ' ') ||
 							(minmax.second.first - 1 == ' ' && minmax.second.second + 1 == ' '))
-							score = 3;
+							score = 2;
 						temp.push_back(std::make_pair(score, minmax));
-					}
 				}
 				else {
-					score = 1;
+					score = 0;
 					temp.push_back(std::make_pair(score, minmax));
 				}
 			}
@@ -517,7 +522,8 @@ char Game::getLetter(size_t row, size_t col) {
 	}
 }
 
-void Game::printBoard() {
+ostringstream Game::printBoard() {
+	ostringstream output;
 	for (int i = 0; i < _size; i++) {
 		cout << "=======";
 	}
@@ -538,6 +544,7 @@ void Game::printBoard() {
 		cout << "|\n" << row << " ";
 		for (int col = 0; col < _size; col++) {
 			cout << "|  " << board[row][col] << "  ";
+			output << board[row][col];
 		}
 		cout << "|\n  ";
 		for (int i = 0; i < _size; i++) {
@@ -545,6 +552,7 @@ void Game::printBoard() {
 		}
 		cout << "|\n";
 	}
+	return output;
 }
 
 size_t Game::size() const {
@@ -578,5 +586,18 @@ void Game::winConditions() {
 			}
 		}
 
+	}
+}
+
+void Game::setBoard(int switchNumber) {
+	for (auto row = 0; row < _size; row++) {
+		for (auto col = 0; col < _size; col++) {
+			if (switchNumber == 1) {
+				_tempBoard[row][col] = board[row][col];
+			}
+			if (switchNumber == 0) {
+				board[row][col] = _tempBoard[row][col];
+			}
+		}
 	}
 }
