@@ -4,9 +4,18 @@
 // Source file for game class
 #include "game.hpp"
 
-pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::getInput() const {
-	pair<pair<size_t, size_t>, pair<size_t, size_t>> CompMove = minimax(1);
-
+pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::getInput() {
+	pair<pair<size_t, size_t>, pair<size_t, size_t>> CompMove;
+	if (_player == 1) {
+		setBoard(1);
+		for (auto row = 0; row < _size; row++) {
+			for (auto col = 0; col < _size; col++) {
+				cout << "trmp" << _tempValues[row][col];
+			}
+		}
+		CompMove = minimax(_depth);
+		setBoard(2);
+	}
 	vector<pair<int, pair<pair<size_t, size_t>, pair<size_t, size_t>>>> moveSelection;
 	int moveNumber = 1;
 	int moveSize = 2;
@@ -50,13 +59,6 @@ pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::getInput() const {
 		}
 	}
 	return std::make_pair(std::make_pair(0, 0), std::make_pair(0, 0));
-}
-
-void Game::movePiece(pair<size_t, size_t> p1, pair<size_t, size_t> p2) {
-	board[p2.first][p2.second] = getLetter(p1.first, p1.second);
-	board[p1.first][p1.second] = 'X';
-	printBoard();
-	board[p1.first][p1.second] = ' ';
 }
 
 void Game::switchDirection() {
@@ -105,7 +107,7 @@ pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>> Gam
 	char command = ' ';
 	pair<pair<size_t, size_t>, pair<size_t, size_t>> CompMove;
 	if (!_jumps.empty()) {
-		CompMove = minimax(1);
+		CompMove = minimax(_depth);
 	}
 	vector<pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<int, pair<size_t, size_t>>>> jumpSelection;
 	int moveNumber = 1;
@@ -169,7 +171,7 @@ pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>> Gam
 				moveNumber++;
 			}
 		}
-	
+
 		while (!_jumped) {
 			if (_player == 0) {
 				if (_jumped) {
@@ -207,16 +209,33 @@ pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>> Gam
 	}
 }
 
-void Game::moveJump(pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>> p1) {
+void Game::moveJump(pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>> p1, bool showBoard) {
+	_boardValues[p1.first.second.first][p1.first.second.second] = _boardValues[p1.first.first.first][p1.first.first.second];
+	_boardValues[p1.first.first.first][p1.first.first.second] = 3;
+	_boardValues[p1.second.first][p1.second.second] = 3;
+
 	board[p1.first.second.first][p1.first.second.second] = getLetter(p1.first.first.first, p1.first.first.second);
 	board[p1.second.first][p1.second.second] = ' ';
 	board[p1.first.first.first][p1.first.first.second] = 'X';
-	printBoard();
+	if (showBoard) {
+		printBoard();
+	}
 	board[p1.first.first.first][p1.first.first.second] = ' ';
 }
 
+void Game::movePiece(pair<size_t, size_t> p1, pair<size_t, size_t> p2, bool showBoard) {
+	_boardValues[p2.first][p2.second] = _boardValues[p1.first][p1.second];
+	_boardValues[p1.first][p1.second] = 3;
 
-void Game::generateMoves() {
+	board[p2.first][p2.second] = getLetter(p1.first, p1.second);
+	board[p1.first][p1.second] = 'X';
+	if (showBoard) {
+		printBoard();
+	}
+	board[p1.first][p1.second] = ' ';
+}
+
+int Game::generateMoves() {
 	// vector of two pairs : start coord and jump coord
 	// and pair of enemy piece's coord
 	vector<pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>>> jumps;
@@ -391,79 +410,284 @@ void Game::generateMoves() {
 		_gameOver = true;
 		cout << _playerLetter << " lost!";
 	}
+	return 0;
 }
 
 
-pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::minimax(size_t depth) const {
-	int score = 0;
-	int temp1 = 0;
-	vector<pair<int, pair<pair<size_t, size_t>, pair<size_t, size_t>>>> temp;
-	pair<pair<size_t, size_t>, pair<size_t, size_t>> bestPlay;
-	if (_hasJump) {
-		for (auto& m : _jumps) {
-			for (auto& minmax : m) {
-				if (minmax.first.second.first - minmax.first.first.first == 2) {
-						if ((minmax.first.second.first + 1 == ' ' && minmax.first.second.second - 1 == ' ') ||
-							(minmax.first.second.first + 1 == ' ' && minmax.first.second.second + 1 == ' '))
-							score = 1;
-						temp.push_back(std::make_pair(score, minmax.first));
+pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::minimax(int depth) {
+	return maxMove(0, 0);
+}
 
-						
-				}
-				else if (minmax.first.second.first - minmax.first.first.first == -2) {
-						if ((minmax.first.second.first - 1 == ' ' && minmax.first.second.second - 1 == ' ') ||
-							(minmax.first.second.first - 1 == ' ' && minmax.first.second.second + 1 == ' '))
-							score = 2;
-						temp.push_back(std::make_pair(score, minmax.first));
-				}
-				else {
-					score = 0;
-					temp.push_back(std::make_pair(score, minmax.first));
+pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::maxMove(int alpha, int beta) {
+	char temp[8][8] = { ' ' };
+	int tempValues[8][8];
+	size_t player = _player;
+	/*if (gameIsOver() || _depth == 0) {
+		return evalGameState(alpha);
+	}*/
+	if (_depth > 0) {
+		_depth -= 1;
+		pair<pair<size_t, size_t>, pair<size_t, size_t>> bestMove;
+		pair<pair<size_t, size_t>, pair<size_t, size_t>> move;
+		vector<vector<pair<pair<size_t, size_t>, pair<size_t, size_t>>>> tempMoves;
+		vector<vector<pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>>>> tempJumps;
+
+		generateMoves();
+		if (_hasJump) {
+			for (auto jumps : _jumps) { tempJumps.push_back(jumps); }
+			for (auto& m : tempJumps) {
+				for (auto& maxmoves : m) {
+
+					for (auto row = 0; row < _size; row++) {
+						for (auto col = 0; col < _size; col++) {
+							temp[row][col] = board[row][col];
+							tempValues[row][col] = _boardValues[row][col];
+						}
+					}
+					if (_player != 1) {
+						player = 1;
+						setPlayer(player);
+						switchDirection();
+						setPlayerLetter();
+					}
+					moveJump(maxmoves, true);
+					player = 1 - player;
+					setPlayer(player);
+					switchDirection();
+					setPlayerLetter();
+					resetMoves();
+					move = minMove(alpha, beta);
+					if (valueOfMoves(move) > valueOfMoves(bestMove)) {
+						bestMove = move;
+						beta = valueOfMoves(move);
+					}
+					if (beta < alpha) {
+						for (auto row = 0; row < _size; row++) {
+							for (auto col = 0; col < _size; col++) {
+								board[row][col] = temp[row][col];
+								_boardValues[row][col] = tempValues[row][col];
+							}
+						}
+						return bestMove;
+					}
+					for (auto row = 0; row < _size; row++) {
+						for (auto col = 0; col < _size; col++) {
+							board[row][col] = temp[row][col];
+							_boardValues[row][col] = tempValues[row][col];
+						}
+					}
 				}
 			}
 		}
-		for (auto& t : temp) {
-			if (t.first > temp1) {
-				temp1 = t.first;
-				bestPlay = t.second;
+		else {
+			for (auto moves : _moves) { tempMoves.push_back(moves); }
+			for (auto& m : tempMoves) {
+				for (auto& maxmoves : m) {
+					for (auto row = 0; row < _size; row++) {
+						for (auto col = 0; col < _size; col++) {
+							temp[row][col] = board[row][col];
+							tempValues[row][col] = _boardValues[row][col];
+						}
+					}
+					if (_player != 1) {
+						player = 1;
+						setPlayer(player);
+						switchDirection();
+						setPlayerLetter();
+					}
+					movePiece(maxmoves.first, maxmoves.second, true);
+					player = 1 - player;
+					setPlayer(player);
+					switchDirection();
+					setPlayerLetter();
+					resetMoves();
+					move = minMove(alpha, beta);
+					if (valueOfMoves(move) > valueOfMoves(bestMove)) {
+						bestMove = move;
+						alpha = valueOfMoves(move);
+					}
+					if (beta > alpha) {
+						for (auto row = 0; row < _size; row++) {
+							for (auto col = 0; col < _size; col++) {
+								board[row][col] = temp[row][col];
+								_boardValues[row][col] = tempValues[row][col];
+							}
+						}
+						return bestMove;
+					}
+					for (auto row = 0; row < _size; row++) {
+						for (auto col = 0; col < _size; col++) {
+							board[row][col] = temp[row][col];
+							_boardValues[row][col] = tempValues[row][col];
+						}
+					}
+				}
 			}
 		}
-		return bestPlay;
+		return bestMove;
+	}
+}
+pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::minMove(int alpha, int beta) {
+	char temp[8][8];
+	int tempValues[8][8];
+	size_t player = _player;
+	/*if (gameIsOver() || _depth == 0) {
+	* improve searching with heuristic
+		return evalGameState(beta);
+	}*/
+	if (_depth >= 0) {
+		pair<pair<size_t, size_t>, pair<size_t, size_t>> bestMove;
+		pair<pair<size_t, size_t>, pair<size_t, size_t>> move;
+		vector<vector<pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>>>> tempJumps;
+		generateMoves();
+		if (_hasJump) {
+			for (auto jumps : _jumps) { tempJumps.push_back(jumps); }
+			for (auto& m : tempJumps) {
+				for (auto& minmoves : m) {
+
+					for (auto row = 0; row < _size; row++) {
+						for (auto col = 0; col < _size; col++) {
+							temp[row][col] = board[row][col];
+							tempValues[row][col] = _boardValues[row][col];
+
+						}
+					}
+					if (_boardValues[minmoves.first.first.first][minmoves.first.first.second] != _player) {
+						player = _boardValues[minmoves.first.first.first][minmoves.first.first.second];
+						setPlayer(player);
+						switchDirection();
+						setPlayerLetter();
+					}
+					moveJump(minmoves, true);
+					player = 1 - player;
+					setPlayer(player);
+					switchDirection();
+					setPlayerLetter();
+					resetMoves();
+					move = maxMove(alpha, beta);
+					if (valueOfMoves(move) > valueOfMoves(bestMove)) {
+						bestMove = move;
+						beta = valueOfMoves(move);
+					}
+					if (beta < alpha) {
+						for (auto row = 0; row < _size; row++) {
+							for (auto col = 0; col < _size; col++) {
+								board[row][col] = temp[row][col];
+								_boardValues[row][col] = tempValues[row][col];
+							}
+						}
+						return bestMove;
+					}
+					for (auto row = 0; row < _size; row++) {
+						for (auto col = 0; col < _size; col++) {
+							board[row][col] = temp[row][col];
+							_boardValues[row][col] = tempValues[row][col];
+						}
+					}
+				}
+			}
+		}
+		else {
+			vector<vector<pair<pair<size_t, size_t>, pair<size_t, size_t>>>> tempMoves = _moves;
+			for (auto& m : tempMoves) {
+				for (auto& minmoves : m) {
+					for (auto row = 0; row < _size; row++) {
+						for (auto col = 0; col < _size; col++) {
+							temp[row][col] = board[row][col];
+							tempValues[row][col] = _boardValues[row][col];
+						}
+					}
+					if (_boardValues[minmoves.first.first][minmoves.first.second] != _player) {
+						player = _boardValues[minmoves.first.first][minmoves.first.second];
+						setPlayer(player);
+						switchDirection();
+						setPlayerLetter();
+					}
+					movePiece(minmoves.first, minmoves.second, true);
+					player = 1 - player;
+					setPlayer(player);
+					switchDirection();
+					setPlayerLetter();
+					resetMoves();
+					move = maxMove(alpha, beta);
+					if (valueOfMoves(move) > valueOfMoves(bestMove)) {
+						bestMove = move;
+						beta = valueOfMoves(move);
+					}
+					if (beta < alpha) {
+						for (auto row = 0; row < _size; row++) {
+							for (auto col = 0; col < _size; col++) {
+								board[row][col] = temp[row][col];
+								_boardValues[row][col] = tempValues[row][col];
+							}
+						}
+						return bestMove;
+					}
+					for (auto row = 0; row < _size; row++) {
+						for (auto col = 0; col < _size; col++) {
+							board[row][col] = temp[row][col];
+							_boardValues[row][col] = tempValues[row][col];
+						}
+					}
+				}
+			}
+		}
+		return bestMove;
+	}
+}
+
+int Game::valueOfMoves(pair<pair<size_t, size_t>, pair<size_t, size_t>> move) {
+	// can add jump move conditions to this
+	int score = 0;
+	if (move.second.first - move.first.first == 1) {
+		if ((move.second.first + 1 == ' ' && move.second.second - 1 == ' ') ||
+			(move.second.first + 1 == ' ' && move.second.second + 1 == ' '))
+			score = 1;
+		if (getLetter(move.first.first, move.first.second) == 'R' ||
+			getLetter(move.first.first, move.first.second) == 'B') {
+			score = 2;
+		}
+	}
+	else if (move.second.first - move.first.first == -1) {
+		if ((move.second.first - 1 == ' ' && move.second.second - 1 == ' ') ||
+			(move.second.first - 1 == ' ' && move.second.second + 1 == ' '))
+			score = 1;
+		if (getLetter(move.first.first, move.first.second) == 'R' ||
+			getLetter(move.first.first, move.first.second) == 'B') {
+			score = 2;
+		}
+	}
+	else if (move.second.first - move.first.first == 2) {
+		if ((move.second.first + 2 == ' ' && move.second.second - 1 == ' ') ||
+			(move.second.first + 2 == ' ' && move.second.second + 1 == ' '))
+			score = 1;
+		if (getLetter(move.first.first, move.first.second) == 'R' ||
+			getLetter(move.first.first, move.first.second) == 'B') {
+			score = 2;
+		}
+	}
+	else if (move.second.first - move.first.first == -2) {
+		if ((move.second.first - 2 == ' ' && move.second.second - 1 == ' ') ||
+			(move.second.first - 2 == ' ' && move.second.second + 1 == ' '))
+			score = 1;
+		if (getLetter(move.first.first, move.first.second) == 'R' ||
+			getLetter(move.first.first, move.first.second) == 'B') {
+			score = 2;
+		}
 	}
 	else {
-		for (auto& m : _moves) {
-			for (auto& minmax : m) {
-				/*if (getLetter(minmax.first.first, minmax.second.first, switchKingDirection(minmax.first.first, minmax.second.first,'U')) == playerKingLetter) {
-				
-				}*/
-				if (minmax.second.first - minmax.first.first == 1) {
-						if ((minmax.second.first + 1 == ' ' && minmax.second.second - 1 == ' ') ||
-							(minmax.second.first + 1 == ' ' && minmax.second.second + 1 == ' '))
-							score = 1;
-						temp.push_back(std::make_pair(score, minmax));
-				}
-				else if (minmax.second.first - minmax.first.first == -1) {
-						if ((minmax.second.first - 1 == ' ' && minmax.second.second - 1 == ' ') ||
-							(minmax.second.first - 1 == ' ' && minmax.second.second + 1 == ' '))
-							score = 2;
-						temp.push_back(std::make_pair(score, minmax));
-				}
-				else {
-					score = 0;
-					temp.push_back(std::make_pair(score, minmax));
-				}
-			}
-		}
-		for (auto t : temp) {
-			if (t.first > temp1) {
-				temp1 = t.first;
-				bestPlay = t.second;
-			}
-		}
-		return bestPlay;
+		score = 0;
 	}
+	return score;
+}
 
-	return bestPlay;
+pair<pair<size_t, size_t>, pair<size_t, size_t>> Game::evalGameState(int minmax) {
+	for (int row = 0; row < _size; row++) {
+		for (int col = 0; col < _size; col++) {
+
+		}
+	}
+	return std::make_pair(std::make_pair(1, 1), std::make_pair(1, 2));
 }
 
 
@@ -513,7 +737,7 @@ void Game::checkForKing() {
 	}
 }
 
-char Game::getLetter(size_t row, size_t col) {
+char Game::getLetter(size_t row, size_t col) const {
 	if (board[row][col] == _playerLetter) {
 		return _playerLetter;
 	}
@@ -522,7 +746,13 @@ char Game::getLetter(size_t row, size_t col) {
 	}
 }
 
-ostringstream Game::printBoard() {
+ostringstream Game::printBoard() const {
+	for (int i = 0; i < _size; i++) {
+		for (int j = 0; j < _size; j++) {
+			cout << _boardValues[i][j];
+			if (j == 7) { cout << endl; }
+		}
+	}
 	ostringstream output;
 	for (int i = 0; i < _size; i++) {
 		cout << "=======";
@@ -594,10 +824,17 @@ void Game::setBoard(int switchNumber) {
 		for (auto col = 0; col < _size; col++) {
 			if (switchNumber == 1) {
 				_tempBoard[row][col] = board[row][col];
+				_tempValues[row][col] = _boardValues[row][col];
 			}
-			if (switchNumber == 0) {
+			if (switchNumber == 2) {
 				board[row][col] = _tempBoard[row][col];
+				_boardValues[row][col] = _tempValues[row][col];
+				_boardValues[row][col] = _tempValues[row][col];
+
 			}
 		}
 	}
+	size_t player = 1;
+	setPlayer(player);
 }
+

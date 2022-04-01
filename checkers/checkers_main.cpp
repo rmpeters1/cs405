@@ -10,7 +10,7 @@ int main() {
 	g.setPlayerLetter();
 	g.generateMoves();
 	input = g.getInput();
-	g.movePiece(input.first, input.second);
+	g.movePiece(input.first, input.second, true);
 	g.resetMoves();
 	g.resetJumped();
 	while (!g.gameIsOver()) {
@@ -26,7 +26,7 @@ int main() {
 		if (g.getHasJump()) {
 			while (!g.gameIsOver()) {
 				jumpInput = g.pieceJump();
-				g.moveJump(jumpInput);
+				g.moveJump(jumpInput, true);
 				g.resetMoves();
 				g.generateMoves();
 				if (!g.getHasJump()) {
@@ -36,7 +36,7 @@ int main() {
 		}
 		else if (!g.getJumped()) {
 			input = g.getInput();
-			g.movePiece(input.first, input.second);
+			g.movePiece(input.first, input.second, true);
 		}
 		g.checkForKing();
 		g.winConditions();

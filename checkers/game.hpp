@@ -29,11 +29,11 @@ public:
 
 	// getInput
 	// Return pairs of coordinates, start and end position
-	pair<pair<size_t, size_t>, pair<size_t, size_t>> getInput() const;
+	pair<pair<size_t, size_t>, pair<size_t, size_t>> getInput();
 
 	// generateMoves
 	// Store all possible checker piece moves
-	void generateMoves();
+	int generateMoves();
 
 
 	// resetMoves
@@ -42,7 +42,7 @@ public:
 
 	// movePiece
 	// Move piece based on input
-	void movePiece(pair<size_t, size_t> p1, pair<size_t, size_t> p2);
+	void movePiece(pair<size_t, size_t> p1, pair<size_t, size_t> p2, bool showBoard);
 
 	// pieceJump
 	// prompt to jump if a jump is possible
@@ -50,7 +50,7 @@ public:
 
 	//moveJump
 	// Piece move function for pieceJump
-	void moveJump(pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t,size_t>> p1);
+	void moveJump(pair<pair<pair<size_t, size_t>, pair<size_t, size_t>>, pair<size_t, size_t>> p1, bool showBoard);
 
 	// getHasJump
 	// Return value of given bool
@@ -66,7 +66,13 @@ public:
 
 	// minimax
 	// Determine best move based on scoring system
-	pair<pair<size_t,size_t>, pair<size_t, size_t>> minimax(size_t depth) const;
+	pair<pair<size_t, size_t>, pair<size_t, size_t>> minimax(int depth);
+	pair<pair<size_t, size_t>, pair<size_t, size_t>> minMove(int alpha, int beta);
+	pair<pair<size_t, size_t>, pair<size_t, size_t>> maxMove(int alpha, int beta);
+	pair<pair<size_t, size_t>, pair<size_t, size_t>> evalGameState(int minmax);
+
+
+	int valueOfMoves(pair<pair<size_t, size_t>, pair<size_t, size_t>> move);
 
 	// switchDirection
 	// Set direction of movement based on player
@@ -88,6 +94,11 @@ public:
 	// set what letter the current player is
 	void setPlayerLetter();
 
+	// setPieceCount
+	// set values for each piece (taken/not taken, color)
+	void setPieceCount();
+
+
 	// switchToKing
 	// Mark piece as king
 	void switchToKing(size_t row, size_t col);
@@ -99,11 +110,11 @@ public:
 
 	// printLetter
 	// Return player or king letter based on piece information 
-	char getLetter(size_t row, size_t col);
+	char getLetter(size_t row, size_t col) const;
 
 	// printBoard
 	// print board based on piece information
-	ostringstream printBoard();
+	ostringstream printBoard() const;
 
 	// gameIsOver
 	// Return whether or not game is over
@@ -119,14 +130,16 @@ public:
 
 private:
 	// player is who will start first. (1 - Computer / 0 - Human)
-	std::size_t _player = 0;
+	size_t _player = 0;
 	int _movementDirection = 1;
+	int _totalPieces = 12;
 	pair<size_t, size_t> _temp;
 	char _playerLetter = ' ';
 	char _playerKingLetter = ' ';
 	bool _hasJump = false;
 	bool _jumped = false;
 	bool _gameOver = false;
+
 	// size of board
 	size_t _size = 8;
 	size_t _depth = 1;
@@ -145,7 +158,18 @@ private:
 		{' ', 'b', ' ', 'b', ' ', 'b', ' ', 'b'},
 		{'b', ' ', 'b', ' ', 'b', ' ', 'b', ' '},
 	};
+	int _boardValues[8][8] = {
+		3,1,3,1,3,1,3,1,
+		1,3,1,3,1,3,1,3,
+		3,1,3,1,3,1,3,1,
+		3,3,3,3,3,3,3,3,
+		3,3,3,3,3,3,3,3,
+		0,3,0,3,0,3,0,3,
+		3,0,3,0,3,0,3,0,
+		0,3,0,3,0,3,0,3
+	};
 
 	char _tempBoard[8][8] = { ' ' };
+	int _tempValues[8][8] = { 0 };
 
 };
