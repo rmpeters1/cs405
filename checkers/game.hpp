@@ -159,6 +159,8 @@ private:
 	// size of board
 	int _size = 8;
 	int _depth = 1;
+	
+	// 1: Random moves, 2: minimax, 3: montecarlo
 	int _gameType;
 
 	vector<vector<pair<pair<int, int>, pair<int, int>>>> _tempMoveSet;
